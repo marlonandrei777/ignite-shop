@@ -1,16 +1,82 @@
-import { styled } from "../styles"
+import Link from "next/link";
+import Image from "next/image";
+import { useKeenSlider } from "keen-slider/react";
+import 'keen-slider/keen-slider.min.css';
 
-// criamos uma const button q recebe o styled q é uma funcao
-// essa funcao recebe como primeiro parametro qual é a tag HTML
-// e o segundo parametro e um obj com estilizacoes
-const Button = styled('button', {
-  backgroundColor: '$green300'
-})
+import { HomeContainer, Product } from "../styles/pages/home";
+import { GetStaticProps } from "next";
+import { stripe } from "@/lib/stripe";
+import Stripe from "stripe";
 
-export default function Home() {
+type HomeProps = {
+  products: {
+    id: string,
+    name: string,
+    imageUrl: string,
+    price: number
+  }[] /* <-- pa dizer q é um array */
+}
+
+export default function Home({ products }: HomeProps) {
+  const [sliderRef] = useKeenSlider({
+    slides: {
+      perView: 3,
+      spacing: 48
+    }
+  });
+
   return (
-    /* para utilizarmos o botao customizado a cima, utizamos ele
-    igual a utilizacao do styledComponents, em forma de componente */
-    <Button>Enviar</Button>
+    <HomeContainer ref={sliderRef} className="keen-slider">
+      {products.map(product => (
+        <Link href={`/product/${product.id}`} key={product.id}>
+          <Product className="keen-slider__slide">
+            <Image src={product.imageUrl} alt="" width={520} height={480} />
+
+            <footer>
+              <strong>{product.name}</strong>
+              <span>{product.price}</span>
+            </footer>
+          </Product>
+        </Link>
+      ))}
+    </HomeContainer>
   )
+}
+
+// Chamada API
+export const getStaticProps: GetStaticProps = async () => {
+  /* await new Promise(resolve => setTimeout(resolve, 2000)) */
+
+  const response = await stripe.products.list({
+    expand: ['data.default_price']
+  })
+
+  // transformacao dos dados
+  // onde criamos uma nova lista, porem só com os dados q queremos
+  const products = response.data.map(product => {
+    const price = product.default_price as Stripe.Price
+
+    return {
+      id: product.id,
+      name: product.name,
+      imageUrl: product.images[0],
+      // formatando o preço
+      price: new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(price.unit_amount! / 100)
+    }
+  })
+
+  /* com o revalidate, a cada 10s q uma pessoa acesssar a page
+  o next por baixo dos panos vai criar uma nova versao dessa pagina. 
+  E todos os usuarios q acessarem nesse intervalo de 10s, eles vao consumir
+  um cash estatico uma versao estatica do html dessa pagina q já foi criada
+  previamente por um acesso de um outro usuario*/
+  return {
+    props: {
+      products,
+    },
+    revalidate: 60 * 60 * 2, // 2 Hours
+  }
 }
