@@ -1,6 +1,6 @@
 import { globalStyles } from '@/styles/global'
 import type { AppProps } from 'next/app'
-
+import { SkeletonTheme } from 'react-loading-skeleton';
 import logoImg from '../assets/logo.svg'
 import Image from 'next/image';
 import { Container, Header } from '@/styles/pages/app';
@@ -14,13 +14,15 @@ globalStyles();
 como um header por ex */
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <Container>
-      <Header>
-        {/* coponente de img importada do next */}
-        <Image src={logoImg} alt='Logo Ignite Shop' />
-      </Header>
+    <SkeletonTheme>
+      <Container>
+        <Header>
+          {/* coponente de img importada do next */}
+          <Image src={logoImg} alt='Logo Ignite Shop' />
+        </Header>
 
-      <Component {...pageProps} />
-    </Container>
+        <Component {...pageProps} />
+      </Container>
+    </SkeletonTheme>
   );
 }

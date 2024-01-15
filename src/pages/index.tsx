@@ -13,7 +13,7 @@ type HomeProps = {
     id: string,
     name: string,
     imageUrl: string,
-    price: number
+    price: string
   }[] /* <-- pa dizer q é um array */
 }
 
@@ -28,7 +28,7 @@ export default function Home({ products }: HomeProps) {
   return (
     <HomeContainer ref={sliderRef} className="keen-slider">
       {products.map(product => (
-        <Link href={`/product/${product.id}`} key={product.id}>
+        <Link href={`/product/${product.id}`} key={product.id} prefetch={false}>
           <Product className="keen-slider__slide">
             <Image src={product.imageUrl} alt="" width={520} height={480} />
 
@@ -43,10 +43,8 @@ export default function Home({ products }: HomeProps) {
   )
 }
 
-// Chamada API
+// Chamada API - SSG
 export const getStaticProps: GetStaticProps = async () => {
-  /* await new Promise(resolve => setTimeout(resolve, 2000)) */
-
   const response = await stripe.products.list({
     expand: ['data.default_price']
   })
