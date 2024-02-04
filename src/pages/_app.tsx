@@ -4,6 +4,7 @@ import { SkeletonTheme } from 'react-loading-skeleton';
 import logoImg from '../assets/logo.svg'
 import Image from 'next/image';
 import { Container, Header } from '@/styles/pages/app';
+import Link from 'next/link';
 
 /* add o globalStyle fora da funcao App para a funcao globalStyles()
 nao executar toda vez q App recarregar, assim a funcao globalStyles()
@@ -18,7 +19,9 @@ export default function App({ Component, pageProps }: AppProps) {
       <Container>
         <Header>
           {/* coponente de img importada do next */}
-          <Image src={logoImg} alt='Logo Ignite Shop' />
+          <Link href="/">
+            <Image src={logoImg} alt='Logo Ignite Shop' />
+          </Link>
         </Header>
 
         <Component {...pageProps} />
